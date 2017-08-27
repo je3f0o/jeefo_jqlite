@@ -1,26 +1,20 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : jeefo_element.js
 * Created at  : 2017-01-06
-* Updated at  : 2017-08-24
+* Updated at  : 2017-08-28
 * Author      : jeefo
 * Purpose     :
 * Description :
 _._._._._._._._._._._._._._._._._._._._._.*/
 
-var dash_case               = require("jeefo_utils/string/dash_case"),
-	jeefo_template_compiler = require("jeefo_template");
+var dash_case = require("jeefo_utils/string/dash_case");
 
 // Constructor
 var JeefoElement = function (elements) {
 	var i;
 
+	// TODO: Think about convert non-html into a text node
 	if (typeof elements === "string") {
-		// TODO: Think about convert non-html into a text node
-
-		if (elements.charAt(0) !== '<') { // most common case
-			elements = jeefo_template_compiler(elements);
-		}
-
 		// Convert html text into DOM nodes
 		var wrapper = document.createElement("div");
 		wrapper.insertAdjacentHTML("afterbegin", elements);

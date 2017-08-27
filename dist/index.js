@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2017-08-08
-* Updated at  : 2017-08-24
+* Updated at  : 2017-08-28
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -15,7 +15,7 @@ Object.defineProperty(JeefoElement.prototype, "type", {
 	}
 });
 
-module.exports = function (element) {
+module.exports = function jqlite (element) {
 	if (element.type === 93370313237) {
 		return element;
 	}
