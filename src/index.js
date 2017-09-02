@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2017-08-08
-* Updated at  : 2017-08-28
+* Updated at  : 2017-09-03
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -18,9 +18,7 @@ var JEEFO_ELEMENT = PP.define("JEEFO_ELEMENT", 93370313237);
 var JeefoElement = require("./jeefo_element");
 
 Object.defineProperty(JeefoElement.prototype, "type", {
-	get : function () {
-		return JEEFO_ELEMENT;
-	}
+	value : JEEFO_ELEMENT
 });
 
 module.exports = function jqlite (element) {

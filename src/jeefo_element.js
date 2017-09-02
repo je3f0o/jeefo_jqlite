@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : jeefo_element.js
 * Created at  : 2017-01-06
-* Updated at  : 2017-08-28
+* Updated at  : 2017-09-03
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -102,6 +102,9 @@ JeefoElement.prototype = {
 	},
 	find : function (query) {
 		return new JeefoElement(this[0].querySelectorAll(query));
+	},
+	children : function (index) {
+		return new JeefoElement(this[0].childNodes[index]);
 	},
 	// Attribute methods {{{2
 	get_attr : function (key) {
