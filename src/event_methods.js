@@ -1,26 +1,31 @@
-/* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
+/* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : event_methods.js
 * Created at  : 2017-08-03
-* Updated at  : 2017-08-11
+* Updated at  : 2019-08-04
 * Author      : jeefo
 * Purpose     :
 * Description :
-_._._._._._._._._._._._._._._._._._._._._.*/
+.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.*/
 // ignore:start
+"use strict";
 
-/* globals */
-/* exported */
+/* globals*/
+/* exported*/
 
 // ignore:end
 
-var passive  = { passive : true },
-	is_array = Array.isArray;
+module.exports = JeefoElement => {
+
+const extend_member = require("@jeefo/utils/class/extend_member");
+
+const is_array             = Array.isArray;
+const passive_event_option = { passive : true };
 
 //EVENT_ALIAS = { rightclick : "contextmenu" }, // Move to Preprocessor
 
-var supports_passive = false;
+let supports_passive = false;
 try {
-	var opts = Object.defineProperty({}, "passive", {
+	const opts = Object.defineProperty({}, "passive", {
 		get : function () { supports_passive = true; }
 	});
 	window.addEventListener("test", null, opts);
@@ -38,70 +43,71 @@ var is_event_supported = function (el, event_name) {
 };
 */
 
-var is_passive_event = function (event_name) {
-	return event_name === "passive";
-},
+// TODO: implement passive events
+const is_passive_event = event_name => event_name === "passive";
 
-get_options = function (event_name) {
+const get_options = event_name => {
 	if (is_passive_event(event_name)) {
-		return passive;
+		return passive_event_option;
 	}
 	return false;
 };
 
-module.exports = function (prototype) {
-
-// Once event {{{1
-prototype.once = function (events, event_handler) {
-	var listener = this.on(events, function (event) {
-		this.removeEventListener(event.type, listener, get_options(event.type));
+// Once event
+extend_member(JeefoElement, "once", function (events, event_handler) {
+	const listener = this.on(events, function (event) {
+        const options = get_options(event.type);
+		this.removeEventListener(event.type, listener, options);
 		event_handler.call(this, event);
 	});
 
 	return listener;
-};
+});
 
-// On event {{{1
-prototype.on = function (events, event_handler) {
-	var i = this.length;
+// On event
+extend_member(JeefoElement, "on", function (events, event_handler) {
+    if (! is_array(events)) {
+        events = [events];
+    }
 
-	while (i--) {
-		if (is_array(events)) {
-			var j = events.length;
-			while (j--) {
-				this[i].addEventListener(events[j], event_handler, get_options(events[j]));
-			}
-		} else {
-			this[i].addEventListener(events, event_handler, get_options(events));
-		}
-	}
+    events.forEach(event_name => {
+        const options = get_options(event_name);
+        this.DOM_element.addEventListener(event_name, event_handler, options);
+    });
 
 	return event_handler;
-};
+});
 
-// Off event {{{1
-prototype.off = function (events, event_handler) {
-	var i = this.length;
+// Off event
+extend_member(JeefoElement, "off", function (events, event_handler) {
+    if (! is_array(events)) {
+        events = [events];
+    }
+    const DOM_element = this.DOM_element;
 
-	while (i--) {
-		if (is_array(events)) {
-			var j = events.length;
-			while (j--) {
-				this[i].removeEventListener(events[j], event_handler, get_options(events[j]));
-			}
-		} else {
-			this[i].removeEventListener(events, event_handler, get_options(events));
-		}
-	}
-};
+    events.forEach(event_name => {
+        const options = get_options(event_name);
+        DOM_element.removeEventListener(event_name, event_handler, options);
+    });
+});
 
-// Trigger event {{{1
-prototype.trigger = function (event_name, bubble) {
-	for (var i = 0, ev = document.createEvent("Event"); i < this.length; ++i) {
-		ev.initEvent(event_name, bubble, true);
-		this[i].dispatchEvent(ev);
-	}
+// Trigger event
+// ref: https://developer.mozilla.org/en-US/docs/Web/API/Event/Event
+/*
+const default_options = {
+    bubbles    : false,
+    cancelable : false
 };
-// }}}1
+options = Object.assign({}, default_options, options);
+*/
+extend_member(JeefoElement, "trigger", function (event_name, options) {
+    // Deprecated for old browsers
+    // const event = document.createEvent("Event");
+    // event.initEvent(event_name, bubble, is_cancelable);
+
+    // new way construct Event in 2019
+    const event = new Event(event_name, options);
+    this.DOM_element.dispatchEvent(event);
+});
 
 };

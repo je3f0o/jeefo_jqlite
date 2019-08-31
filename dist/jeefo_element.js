@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : jeefo_element.js
 * Created at  : 2017-01-06
-* Updated at  : 2017-09-03
+* Updated at  : 2019-08-04
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -108,8 +108,8 @@ JeefoElement.prototype = {
 };
 // }}}1
 
-require("./event_methods")(JeefoElement.prototype);
-require("./class_methods")(JeefoElement.prototype);
-require("./style_methods")(JeefoElement.prototype);
+require("./event_methods")(JeefoElement);
+require("./class_methods")(JeefoElement);
+require("./style_methods")(JeefoElement);
 
 module.exports = JeefoElement;
