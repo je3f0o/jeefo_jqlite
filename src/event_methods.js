@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : event_methods.js
 * Created at  : 2017-08-03
-* Updated at  : 2019-08-04
+* Updated at  : 2019-11-16
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -14,12 +14,12 @@
 
 // ignore:end
 
-module.exports = JeefoElement => {
-
 const extend_member = require("@jeefo/utils/class/extend_member");
 
 const is_array             = Array.isArray;
 const passive_event_option = { passive : true };
+
+module.exports = JeefoElement => {
 
 //EVENT_ALIAS = { rightclick : "contextmenu" }, // Move to Preprocessor
 
@@ -56,12 +56,11 @@ const get_options = event_name => {
 // Once event
 extend_member(JeefoElement, "once", function (events, event_handler) {
 	const listener = this.on(events, function (event) {
-        const options = get_options(event.type);
-		this.removeEventListener(event.type, listener, options);
+        //const options = get_options(event.type);
+		this.removeEventListener(event.type, listener);
 		event_handler.call(this, event);
 	});
-
-	return listener;
+    return listener;
 });
 
 // On event
@@ -71,8 +70,8 @@ extend_member(JeefoElement, "on", function (events, event_handler) {
     }
 
     events.forEach(event_name => {
-        const options = get_options(event_name);
-        this.DOM_element.addEventListener(event_name, event_handler, options);
+        //const options = get_options(event_name);
+        this.DOM_element.addEventListener(event_name, event_handler, false);
     });
 
 	return event_handler;
@@ -86,8 +85,8 @@ extend_member(JeefoElement, "off", function (events, event_handler) {
     const DOM_element = this.DOM_element;
 
     events.forEach(event_name => {
-        const options = get_options(event_name);
-        DOM_element.removeEventListener(event_name, event_handler, options);
+        //const options = get_options(event_name);
+        DOM_element.removeEventListener(event_name, event_handler, false);
     });
 });
 
@@ -107,7 +106,10 @@ extend_member(JeefoElement, "trigger", function (event_name, options) {
 
     // new way construct Event in 2019
     const event = new Event(event_name, options);
-    this.DOM_element.dispatchEvent(event);
+    if (this.DOM_element) {
+        return this.DOM_element.dispatchEvent(event);
+    }
+    return true;
 });
 
 };

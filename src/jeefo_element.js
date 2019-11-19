@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : jeefo_element.js
 * Created at  : 2017-01-06
-* Updated at  : 2019-08-04
+* Updated at  : 2019-11-16
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -38,53 +38,108 @@ const JEEFO_ELEMENT = 933603132357;
 
 //ignore:end
 
-const for_each      = require("@jeefo/utils/object/for_each");
-const readonly      = require("@jeefo/utils/object/readonly");
-const dash_case     = require("@jeefo/utils/string/dash_case");
-const JeefoElements = require("./jeefo_elements");
+const for_each  = require("@jeefo/utils/object/for_each");
+const Readonly  = require("@jeefo/utils/object/readonly");
+const dash_case = require("@jeefo/utils/string/dash_case");
+
+let JeefoElement;
+
+class JeefoElements {
+    constructor (elements) {
+        this.length = elements.length;
+        for (let i = 0; i < elements.length; ++i) {
+            this[i] = elements[i];
+        }
+    }
+
+	eq (index) {
+		return new JeefoElement(this[index]);
+	}
+
+	first (query) {
+        for (let i = 0; i < this.length; i += 1) {
+            const node = this[i].querySelector(query);
+            if (node) { return new JeefoElement(node); }
+        }
+        return null;
+	}
+
+	find (query) {
+        const elements = [];
+        for (let i = 0; i < this.length; i += 1) {
+            const nodes = this[i].querySelectorAll(query);
+            for (let j = 0; j < nodes.length; j += 1) {
+                elements.push(nodes[j]);
+            }
+        }
+        return new JeefoElements(elements);
+	}
+
+	remove () {
+		for (let i = 0; i < this.length; ++i) {
+			this[i].parentNode.removeChild(this[i]);
+		}
+	}
+
+	text (value) {
+		if (value === undefined) {
+			value = '';
+			for (let i = 0; i < this.length; ++i) {
+                // TODO: research about is textContent right?
+				value += this[i].textContent;
+			}
+			return value;
+		}
+		for (let i = 0; i < this.length; ++i) {
+			this[i].textContent = value;
+		}
+	}
+}
 
 // Constructor
-class JeefoElement {
+JeefoElement = class JeefoElement {
     constructor (element) {
         this.DOM_element = element;
+    }
+
+    get value () {
+        switch (this.DOM_element.tagName) {
+            case "INPUT"  :
+            case "SELECT" :
+                return this.DOM_element.value;
+        }
+        console.warn(`Undefined '${ this.DOM_element.tagName }' input.`);
+    }
+    set value (value) {
+        switch (this.DOM_element.tagName) {
+            case "INPUT"  :
+            case "SELECT" :
+                this.DOM_element.value = value;
+                break;
+            default:
+                console.warn(
+                    `Undefined '${ this.DOM_element.tagName }' input.`
+                );
+        }
+    }
+	get text ()      { return this.DOM_element.textContent; }
+	set text (value) { this.DOM_element.textContent = value; }
+
+    get name () {
+        return this.DOM_element.tagName;
+    }
+
+    get child_element_length () {
+        return this.DOM_element.childElementCount;
     }
 
 	// DOM methods
 	remove () {
         this.trigger("ditach");
-        if (this.DOM_element.parentNode) {
+        if (this.DOM_element && this.DOM_element.parentNode) {
             this.DOM_element.parentNode.removeChild(this.DOM_element);
         }
-	}
-    get value () {
-        if (this.DOM_element.tagName !== "INPUT") {
-            return this.DOM_element.innerText;
-        }
-        return this.DOM_element.value;
-    }
-    set value (value) {
-        if (this.DOM_element.tagName !== "INPUT") {
-            this.DOM_element.innerText = value;
-        } else {
-            this.DOM_element.value = value;
-        }
-    }
-	get text ()      { return this.DOM_element.innerText; }
-	set text (value) { this.DOM_element.innerText = value; }
-
-	replace (node) {
-        if (node.type === JEEFO_ELEMENT) {
-            node.trigger("detach");
-            node = node.DOM_element;
-        } else {
-            const $node = new JeefoElement(node);
-            $node.trigger("detach");
-        }
-		this.DOM_element.parentNode.replaceChild(node, this.DOM_element);
-	}
-	append (node) {
-        if (node.type === JEEFO_ELEMENT) { node = node.DOM_element; }
-		this.DOM_element.appendChild(node);
+        this.DOM_element = null;
 	}
 	before (node) {
         if (node.type === JEEFO_ELEMENT) { node = node.DOM_element; }
@@ -98,6 +153,22 @@ class JeefoElement {
 	}
 	clone (is_deep) {
         return new JeefoElement(this.DOM_element.cloneNode(is_deep));
+	}
+	append (node) {
+        if (node.type === JEEFO_ELEMENT) { node = node.DOM_element; }
+		this.DOM_element.appendChild(node);
+	}
+	replace (node) {
+        if (node.type === JEEFO_ELEMENT) {
+            node.trigger("detach");
+            node = node.DOM_element;
+        } else {
+            const $node = new JeefoElement(node);
+            $node.trigger("detach");
+        }
+		this.DOM_element.parentNode.replaceChild(node, this.DOM_element);
+        this.DOM_element = node;
+        return this;
 	}
 
 	// Selector methods
@@ -114,6 +185,9 @@ class JeefoElement {
 	}
     parent () {
 		return new JeefoElement(this.DOM_element.parentNode);
+    }
+    prev () {
+		return new JeefoElement(this.DOM_element.previousSibling);
     }
     next () {
 		return new JeefoElement(this.DOM_element.nextElementSibling);
@@ -145,7 +219,7 @@ class JeefoElement {
     static is_jeefo_element (element) {
         return element.type === JEEFO_ELEMENT;
     }
-}
+};
 
 // Makes array like object
 //JeefoElement.prototype.length = 0;
@@ -157,6 +231,7 @@ require("./event_methods")(JeefoElement);
 require("./class_methods")(JeefoElement);
 require("./style_methods")(JeefoElement);
 
-readonly(JeefoElement.prototype, "type", JEEFO_ELEMENT);
+const r = new Readonly(JeefoElement.prototype);
+r.prop("type", JEEFO_ELEMENT);
 
 module.exports = JeefoElement;

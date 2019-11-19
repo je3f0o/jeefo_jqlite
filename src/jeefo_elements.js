@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : jeefo_elements.js
 * Created at  : 2019-06-27
-* Updated at  : 2019-06-27
+* Updated at  : 2019-10-04
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -19,6 +19,7 @@ const JeefoElement = require("./jeefo_element");
 
 class JeefoElements {
     constructor (elements) {
+        this.length = elements.length;
         for (let i = 0; i < elements.length; ++i) {
             this[i] = elements[i];
         }

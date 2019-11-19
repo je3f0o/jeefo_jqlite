@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : style_methods.js
 * Created at  : 2017-08-03
-* Updated at  : 2019-08-04
+* Updated at  : 2019-10-09
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -16,9 +16,9 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 
 // ignore:end
 
-module.exports = JeefoElement => {
-
 const extend_member = require("@jeefo/utils/class/extend_member");
+
+module.exports = JeefoElement => {
 
 // Camel case
 const camel_case_replace = (_, letter) => letter.toUpperCase();
@@ -91,6 +91,10 @@ make_get_inner_dimention = function (is_horizontal) {
 */
 
 // CSS
+extend_member(JeefoElement, "rect", function () {
+    return this.DOM_element.getBoundingClientRect();
+});
+
 extend_member(JeefoElement, "style", function (name, value) {
     const property = css_kebab_to_camel(name);
     if (value === undefined) {
@@ -152,5 +156,9 @@ prototype.offset = make_generic_method_handler_curry(function (element) {
 	};
 });
 */
+
+extend_member(JeefoElement, "get_computed_style", function (pseudo_element) {
+    return window.getComputedStyle(this.DOM_element, pseudo_element);
+});
 
 };
