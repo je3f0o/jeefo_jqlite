@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : style_methods.js
 * Created at  : 2017-08-03
-* Updated at  : 2019-10-09
+* Updated at  : 2019-12-11
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -118,6 +118,10 @@ extend_member(JeefoElement, "css", (() => {
         }
     };
 })());
+
+extend_member(JeefoElement, "trigger_reflow", function () {
+    this.DOM_element.offsetHeight; // jshint ignore:line
+});
 
 // Dimention methods
 const object_define_property = Object.defineProperty;

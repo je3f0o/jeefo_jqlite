@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : jeefo_element.js
 * Created at  : 2017-01-06
-* Updated at  : 2019-11-16
+* Updated at  : 2019-12-28
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -103,27 +103,13 @@ JeefoElement = class JeefoElement {
     }
 
     get value () {
-        switch (this.DOM_element.tagName) {
-            case "INPUT"  :
-            case "SELECT" :
-                return this.DOM_element.value;
-        }
-        console.warn(`Undefined '${ this.DOM_element.tagName }' input.`);
+        return this.DOM_element.value;
     }
     set value (value) {
-        switch (this.DOM_element.tagName) {
-            case "INPUT"  :
-            case "SELECT" :
-                this.DOM_element.value = value;
-                break;
-            default:
-                console.warn(
-                    `Undefined '${ this.DOM_element.tagName }' input.`
-                );
-        }
+        this.DOM_element.value = value;
     }
-	get text ()      { return this.DOM_element.textContent; }
-	set text (value) { this.DOM_element.textContent = value; }
+	get text ()      { return this.DOM_element.innerText; }
+	set text (value) { this.DOM_element.innerText = value; }
 
     get name () {
         return this.DOM_element.tagName;
