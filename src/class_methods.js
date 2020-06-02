@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : class_methods.js
 * Created at  : 2017-08-03
-* Updated at  : 2019-08-05
+* Updated at  : 2020-06-02
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -14,9 +14,9 @@
 
 // ignore:end
 
-module.exports = JeefoElement => {
-
 const extend_member = require("@jeefo/utils/class/extend_member");
+
+module.exports = JeefoElement => {
 
 // ClassList
 if (Element.prototype.hasOwnProperty("classList")) {
