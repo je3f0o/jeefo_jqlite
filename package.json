@@ -1,9 +1,9 @@
 {
     "name": "@jeefo/jqlite",
-    "version": "0.0.4",
+    "version": "0.0.6",
     "homepage": "https://github.com/je3f0o/jeefo_jqlite",
     "copyright": "2018",
-    "description": "Very simple DOM wrapper library for jeefo framework.",
+    "description": "Very simple DOM wrapper library for jeefo framework. (under development...)",
     "author": {
         "name": "je3f0o",
         "email": "je3f0o@gmail.com"
@@ -16,7 +16,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/je3f0o/jeefo_jqlite.git"
+        "url": "get@github.com:je3f0o/jeefo_jqlite.git"
     },
     "keywords": [
         "jeefo",

@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2017-08-08
-* Updated at  : 2019-11-17
+* Updated at  : 2020-10-22
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -14,34 +14,25 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 
 // ignore:end
 
-const JeefoElement  = require("./jeefo_element");
-const JeefoElements = require("./jeefo_elements");
+const JeefoElement   = require("./jeefo_element");
+const JeefoDOMParser = require("./dom_parser");
 
-const is_object = o => o !== null && typeof o === "object";
+const is_valid_node = n => n instanceof Element || n instanceof Comment;
 
-module.exports = function jqlite (element) {
-	if (JeefoElement.is_jeefo_element(element)) {
-		return element;
+module.exports = function (element) {
+	if (element instanceof JeefoElement) {
+        return new JeefoElement(element.DOM_element);
+    } else if (is_valid_node(element)) {
+        return new JeefoElement(element);
     } else if (typeof element === "string") {
         // Convert html text into DOM nodes
-        let wrapper = document.createElement("div");
-        wrapper.insertAdjacentHTML("afterbegin", element);
+        const elements = JeefoDOMParser.parse(element);
+        if (elements.length !== 1 || ! is_valid_node(elements[0])) {
+            throw new Error("Invalid HTML");
+        }
 
-        const elements = [];
-        while (wrapper.firstChild) {
-            elements.push(wrapper.firstChild);
-            wrapper.removeChild(wrapper.firstChild);
-        }
-        if (elements.length > 1) {
-            return new JeefoElements(elements);
-        } else if (elements.length === 1) {
-            element = elements[0];
-        }
+        return new JeefoElement(elements[0]);
 	}
-
-    if (is_object(element) && "nodeType" in element) {
-        return new JeefoElement(element);
-    }
 
     throw new Error("Invalid argument: jqlite(element)");
 };

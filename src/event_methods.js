@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : event_methods.js
 * Created at  : 2017-08-03
-* Updated at  : 2019-11-27
+* Updated at  : 2020-06-25
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -100,13 +100,19 @@ const default_options = {
 options = Object.assign({}, default_options, options);
 */
 extend_member(JeefoElement, "trigger", function (event_name, options) {
-    // Deprecated for old browsers
-    // const event = document.createEvent("Event");
-    // event.initEvent(event_name, bubble, is_cancelable);
-
-    // new way construct Event in 2019
-    const event = new Event(event_name, options);
     if (this.DOM_element) {
+        // Deprecated for old browsers
+        // const event = document.createEvent("Event");
+        // event.initEvent(event_name, bubble, is_cancelable);
+
+        // new way construct Event in 2019
+        const event = new Event(event_name, options);
+        if (options && options.data) {
+            event.data = options.data;
+        }
+        if (options && options.properties) {
+            Object.assign(event, options.properties);
+        }
         return this.DOM_element.dispatchEvent(event);
     }
     return true;

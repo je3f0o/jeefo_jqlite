@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : jeefo_element.js
 * Created at  : 2017-01-06
-* Updated at  : 2019-12-28
+* Updated at  : 2020-10-21
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -34,124 +34,73 @@ NODE_TYPE_DOCUMENT_FRAGMENT = 11
 ['NOTATION_NODE', 12]
 */
 
-const JEEFO_ELEMENT = 933603132357;
-
 //ignore:end
 
-const for_each  = require("@jeefo/utils/object/for_each");
-const Readonly  = require("@jeefo/utils/object/readonly");
 const dash_case = require("@jeefo/utils/string/dash_case");
-
-let JeefoElement;
-
-class JeefoElements {
-    constructor (elements) {
-        this.length = elements.length;
-        for (let i = 0; i < elements.length; ++i) {
-            this[i] = elements[i];
-        }
-    }
-
-	eq (index) {
-		return new JeefoElement(this[index]);
-	}
-
-	first (query) {
-        for (let i = 0; i < this.length; i += 1) {
-            const node = this[i].querySelector(query);
-            if (node) { return new JeefoElement(node); }
-        }
-        return null;
-	}
-
-	find (query) {
-        const elements = [];
-        for (let i = 0; i < this.length; i += 1) {
-            const nodes = this[i].querySelectorAll(query);
-            for (let j = 0; j < nodes.length; j += 1) {
-                elements.push(nodes[j]);
-            }
-        }
-        return new JeefoElements(elements);
-	}
-
-	remove () {
-		for (let i = 0; i < this.length; ++i) {
-			this[i].parentNode.removeChild(this[i]);
-		}
-	}
-
-	text (value) {
-		if (value === undefined) {
-			value = '';
-			for (let i = 0; i < this.length; ++i) {
-                // TODO: research about is textContent right?
-				value += this[i].textContent;
-			}
-			return value;
-		}
-		for (let i = 0; i < this.length; ++i) {
-			this[i].textContent = value;
-		}
-	}
-}
+const {slice}   = Array.prototype;
 
 // Constructor
-JeefoElement = class JeefoElement {
+class JeefoElement {
     constructor (element) {
         this.DOM_element = element;
     }
 
-    get value () {
-        return this.DOM_element.value;
-    }
-    set value (value) {
-        this.DOM_element.value = value;
-    }
-	get text ()      { return this.DOM_element.innerText; }
-	set text (value) { this.DOM_element.innerText = value; }
+    get value ()      { return this.DOM_element.value;  }
+    set value (value) { this.DOM_element.value = value; }
 
-    get name () {
-        return this.DOM_element.tagName;
-    }
+    // Don't use innerText here.
+    // Because innerText takes CSS styles into account, triggering reflow to
+    // up-to-date computes style and computationally expensive.
+	get text ()      { return this.DOM_element.textContent;  }
+	set text (value) { this.DOM_element.textContent = value; }
 
-    get child_element_length () {
-        return this.DOM_element.childElementCount;
-    }
+    get name () { return this.DOM_element.tagName; }
 
 	// DOM methods
+    is (node) {
+        return this.DOM_element === node;
+    }
 	remove () {
-        this.trigger("ditach");
         if (this.DOM_element && this.DOM_element.parentNode) {
             this.DOM_element.parentNode.removeChild(this.DOM_element);
         }
         this.DOM_element = null;
+        return this;
 	}
 	before (node) {
-        if (node.type === JEEFO_ELEMENT) { node = node.DOM_element; }
+        if (node instanceof JeefoElement) { node = node.DOM_element; }
 		this.DOM_element.parentNode.insertBefore(node, this.DOM_element);
+        return this;
 	}
 	after (node) {
-        if (node.type === JEEFO_ELEMENT) { node = node.DOM_element; }
+        if (node instanceof JeefoElement) { node = node.DOM_element; }
 		this.DOM_element.parentNode.insertBefore(
             node, this.DOM_element.nextSibling
         );
+        return this;
 	}
 	clone (is_deep) {
         return new JeefoElement(this.DOM_element.cloneNode(is_deep));
 	}
+    parent () {
+        if (this.DOM_element.parentNode) {
+            return new JeefoElement(this.DOM_element.parentNode);
+        }
+        return null;
+    }
 	append (node) {
-        if (node.type === JEEFO_ELEMENT) { node = node.DOM_element; }
+        if (node instanceof JeefoElement) { node = node.DOM_element; }
 		this.DOM_element.appendChild(node);
+        return this;
+	}
+	replace_with (node) {
+        if (node instanceof JeefoElement) { node = node.DOM_element; }
+		this.DOM_element.replaceWith(node);
+        this.DOM_element = node;
+        return this;
 	}
 	replace (node) {
-        if (node.type === JEEFO_ELEMENT) {
-            node.trigger("detach");
-            node = node.DOM_element;
-        } else {
-            const $node = new JeefoElement(node);
-            $node.trigger("detach");
-        }
+        if (node instanceof JeefoElement) { node = node.DOM_element; }
 		this.DOM_element.parentNode.replaceChild(node, this.DOM_element);
         this.DOM_element = node;
         return this;
@@ -164,16 +113,17 @@ JeefoElement = class JeefoElement {
 	}
 	find (query) {
         const elements = this.DOM_element.querySelectorAll(query);
-        return new JeefoElements(elements);
+        return slice.call(elements);
 	}
-	children (index) {
-		return new JeefoElement(this.DOM_element.childNodes[index]);
+	children (index, ...args) {
+        let result = this.DOM_element.children[index];
+        for (const i of args) {
+            result = result.children[i];
+        }
+		return new JeefoElement(result);
 	}
-    parent () {
-		return new JeefoElement(this.DOM_element.parentNode);
-    }
     prev () {
-		return new JeefoElement(this.DOM_element.previousSibling);
+		return new JeefoElement(this.DOM_element.previousElementSibling);
     }
     next () {
 		return new JeefoElement(this.DOM_element.nextElementSibling);
@@ -181,43 +131,39 @@ JeefoElement = class JeefoElement {
 
 	// Attribute methods
 	get_attr (key, to_dash_case = true) {
-        if (to_dash_case) { key = dash_case(key); }
-		return this.DOM_element.getAttribute(key);
+		return this.DOM_element.getAttribute(
+            to_dash_case ? dash_case(key) : key
+        );
 	}
 	set_attr (key, value = '', to_dash_case = true) {
-        if (to_dash_case) { key = dash_case(key); }
-		this.DOM_element.setAttribute(key, value);
+		this.DOM_element.setAttribute(
+            to_dash_case ? dash_case(key) : key, value
+        );
+        return this;
 	}
 	has_attr (key, to_dash_case = true) {
-        if (to_dash_case) { key = dash_case(key); }
-		return this.DOM_element.hasAttribute(key);
+		return this.DOM_element.hasAttribute(
+            to_dash_case ? dash_case(key) : key
+        );
 	}
 	remove_attr (key, to_dash_case = true) {
-        if (to_dash_case) { key = dash_case(key); }
-		this.DOM_element.removeAttribute(key);
+		this.DOM_element.removeAttribute(
+            to_dash_case ? dash_case(key) : key
+        );
+        return this;
 	}
     attrs (attrs, to_dash_case = true) {
-        for_each(attrs, (key, value) => {
-            this.set_attr(key, value, to_dash_case);
-        });
+        for (const prop of Object.keys(attrs)) {
+            this.DOM_element.setAttribute(
+                to_dash_case ? dash_case(prop) : prop, attrs[prop]
+            );
+        }
+        return this;
     }
-
-    static is_jeefo_element (element) {
-        return element.type === JEEFO_ELEMENT;
-    }
-};
-
-// Makes array like object
-//JeefoElement.prototype.length = 0;
-//JeefoElement.prototype.splice = [].splice;
-//JeefoElement.prototype.push = [].push;
-//JeefoElement.prototype.sort = [].sort;
+}
 
 require("./event_methods")(JeefoElement);
 require("./class_methods")(JeefoElement);
 require("./style_methods")(JeefoElement);
-
-const r = new Readonly(JeefoElement.prototype);
-r.prop("type", JEEFO_ELEMENT);
 
 module.exports = JeefoElement;

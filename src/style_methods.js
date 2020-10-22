@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : style_methods.js
 * Created at  : 2017-08-03
-* Updated at  : 2019-12-11
+* Updated at  : 2020-10-22
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -20,27 +20,31 @@ const extend_member = require("@jeefo/utils/class/extend_member");
 
 module.exports = JeefoElement => {
 
+//const MS_HACK    = /^-ms-/;
+//const DASH_CASE  = /[_-]([a-z])/g;
+const CAMEL_CASE = /[A-Z]/g;
+
 // Camel case
-const camel_case_replace = (_, letter) => letter.toUpperCase();
+//const camel_case_replace = (_, letter) => letter.toUpperCase();
 
 /**
  * Converts kebab-case to camelCase.
  * @param name Name to normalize
  */
-const kebab_to_camel = (() => {
-    const DASH_LOWERCASE_REGEXP = /[_-]([a-z])/g;
-    return name => name.replace(DASH_LOWERCASE_REGEXP, camel_case_replace);
-})();
 
 /**
  * Converts kebab-case to camelCase. There is also a special case for the
  * ms prefix starting with a lowercase letter.
  * @param name Name to normalize
+const kebab_to_camel = name =>
+    name.replace(MS_HACK, "ms-").replace(DASH_CASE, camel_case_replace);
  */
-const css_kebab_to_camel = (() => {
-    const MS_HACK_REGEXP = /^-ms-/;
-    return name => kebab_to_camel(name.replace(MS_HACK_REGEXP, "ms-"));
-})();
+
+/**
+ * Converts camelCase to kebab-case.
+ * @param name - Name to normalize
+ */
+const camel_to_kebab = s => s.replace(CAMEL_CASE, m => `-${m.toLowerCase()}`);
 
 /*
 // int parser
@@ -95,32 +99,29 @@ extend_member(JeefoElement, "rect", function () {
     return this.DOM_element.getBoundingClientRect();
 });
 
-extend_member(JeefoElement, "style", function (name, value) {
-    const property = css_kebab_to_camel(name);
-    if (value === undefined) {
-        return this.DOM_element.style[property];
-    /*
-    } else if (value === null) {
-        return this.DOM_element.style.removeProperty(property);
-    */
+extend_member(JeefoElement, "style", function (property, value, to_kebab=true) {
+    if (to_kebab) {
+        property = camel_to_kebab(property);
     }
-    this.DOM_element.style[property] = value;
+
+    switch (value) {
+        case undefined :
+            return this.DOM_element.style.getPropertyValue(property);
+        case null :
+            return this.DOM_element.style.removeProperty(property);
+    }
+    this.DOM_element.style.setProperty(property, value);
 });
 
-extend_member(JeefoElement, "css", (() => {
-    const object_keys = Object.keys;
-
-    return function (styles) {
-        const style_attribute = this.DOM_element.style;
-        for (let i = 0, props = object_keys(styles); i < props.length; ++i) {
-            const property = css_kebab_to_camel(props[i]);
-            style_attribute[property] = styles[props[i]];
-        }
-    };
-})());
+extend_member(JeefoElement, "css", function (styles, to_kebab = true) {
+    for (const prop of Object.keys(styles)) {
+        this.style(prop, styles[prop], to_kebab);
+    }
+});
 
 extend_member(JeefoElement, "trigger_reflow", function () {
-    this.DOM_element.offsetHeight; // jshint ignore:line
+    this.DOM_element.getBoundingClientRect();
+    //this.DOM_element.offsetHeight; // jshint ignore:line
 });
 
 // Dimention methods
@@ -129,7 +130,7 @@ object_define_property(JeefoElement.prototype, "width", {
     get () { return this.DOM_element.offsetWidth; },
 
     set (value) {
-        if (typeof value === "number") { value = `${ value }px`; }
+        if (typeof value === "number") value = `${value}px`;
         this.DOM_element.style.width = value;
     }
 });
@@ -137,7 +138,7 @@ object_define_property(JeefoElement.prototype, "height", {
     get () { return this.DOM_element.offsetHeight; },
 
     set (value) {
-        if (typeof value === "number") { value = `${ value }px`; }
+        if (typeof value === "number") value = `${value}px`;
         this.DOM_element.style.height = value;
     }
 });
